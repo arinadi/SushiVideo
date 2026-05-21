@@ -35,6 +35,7 @@ Run SushiVideo instantly in your browser with zero local setup.
    - `SV_TELEGRAM_BOT_TOKEN`
    - `SV_TELEGRAM_CHAT_ID`
    - `SV_AI_API_KEY` (Gemini API Key)
+   - `SV_YOUTUBE_COOKIES` (Optional: Netscape format cookies.txt to bypass YouTube 429 bans)
 4. Paste and run the following cell:
 
 ```python
@@ -43,7 +44,7 @@ import os
 from google.colab import userdata
 
 # 1. Load Secrets
-for key in ['SV_TELEGRAM_BOT_TOKEN', 'SV_TELEGRAM_CHAT_ID', 'SV_AI_API_KEY']:
+for key in ['SV_TELEGRAM_BOT_TOKEN', 'SV_TELEGRAM_CHAT_ID', 'SV_AI_API_KEY', 'SV_YOUTUBE_COOKIES']:
     try:
         val = userdata.get(key)
         if val: os.environ[key] = str(val)
@@ -52,6 +53,12 @@ for key in ['SV_TELEGRAM_BOT_TOKEN', 'SV_TELEGRAM_CHAT_ID', 'SV_AI_API_KEY']:
 # 2. Launch
 !curl -s "https://raw.githubusercontent.com/arinadi/SushiVideo/main/runner.py?v=$(date +%s)" -o runner.py && python runner.py
 ```
+
+## 🕹️ Telegram Usage
+
+The bot is designed to be as frictionless as possible:
+- **Standard Video:** Simply send any YouTube URL.
+- **Custom Subtitles:** Upload your own `.srt` file as a document to the bot, and write the YouTube URL in the file's **caption**. The bot will prioritize your custom SRT over auto-generated ones and Whisper.
 
 ## 🏗️ Architecture
 
