@@ -48,7 +48,17 @@ class BotHandlers:
         self.idle_monitor.reset()
         if not await auth_check(update):
             return
-        await update.message.reply_text("🍪 Untuk memperbarui cookies YouTube, silakan unggah file `cookies.txt` ke obrolan ini.", parse_mode="Markdown")
+            
+        text = update.message.text or ""
+        if len(text) > 8:
+            cookie_content = text.replace("/cookie", "", 1).strip()
+            if "# Netscape" in cookie_content:
+                with open("cookies.txt", "w", encoding="utf-8") as f:
+                    f.write(cookie_content)
+                await update.message.reply_text("✅ Teks cookies berhasil disimpan! Anda siap mengunduh YouTube lagi.")
+                return
+                
+        await update.message.reply_text("🍪 Untuk memperbarui cookies YouTube, silakan unggah file `cookies.txt` (atau sertakan `/cookie` di caption), atau *paste* isi teksnya langsung dengan perintah:\n`/cookie # Netscape HTTP Cookie File...`", parse_mode="Markdown")
 
     async def handle_url(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.idle_monitor.reset()
@@ -84,7 +94,7 @@ class BotHandlers:
         
         # Check if this is a cookie upload
         url_text = update.message.caption or ""
-        if doc.file_name.lower() == 'cookies.txt' or '/cookie' in url_text.lower():
+        if 'cookies.txt' in doc.file_name.lower() or '/cookie' in url_text.lower():
             file = await context.bot.get_file(doc.file_id)
             await file.download_to_drive("cookies.txt")
             await update.message.reply_text("✅ File `cookies.txt` berhasil diperbarui! Anda siap mengunduh YouTube lagi.", parse_mode="Markdown")
