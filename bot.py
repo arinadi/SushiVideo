@@ -44,6 +44,12 @@ class BotHandlers:
             return
         await update.message.reply_text("🍣 Welcome to SushiVideo!\nSend me a YouTube URL to get started.")
 
+    async def cookie_cmd(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.idle_monitor.reset()
+        if not await auth_check(update):
+            return
+        await update.message.reply_text("🍪 Untuk memperbarui cookies YouTube, silakan unggah file `cookies.txt` ke obrolan ini.", parse_mode="Markdown")
+
     async def handle_url(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.idle_monitor.reset()
         if not await auth_check(update):
@@ -75,8 +81,17 @@ class BotHandlers:
             return
             
         doc = update.message.document
+        
+        # Check if this is a cookie upload
+        url_text = update.message.caption or ""
+        if doc.file_name.lower() == 'cookies.txt' or '/cookie' in url_text.lower():
+            file = await context.bot.get_file(doc.file_id)
+            await file.download_to_drive("cookies.txt")
+            await update.message.reply_text("✅ File `cookies.txt` berhasil diperbarui! Anda siap mengunduh YouTube lagi.", parse_mode="Markdown")
+            return
+            
         if not doc.file_name.lower().endswith('.srt'):
-            await update.message.reply_text("❌ Please upload a valid .srt file.")
+            await update.message.reply_text("❌ Please upload a valid .srt file or cookies.txt file.")
             return
             
         import re
@@ -205,6 +220,7 @@ def get_application(job_manager: JobManager, idle_monitor: IdleMonitor) -> Appli
     
     handlers = BotHandlers(job_manager, idle_monitor)
     app.add_handler(CommandHandler("start", handlers.start_cmd))
+    app.add_handler(CommandHandler("cookie", handlers.cookie_cmd))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_url))
     app.add_handler(MessageHandler(filters.Document.ALL, handlers.handle_document))
     app.add_handler(CallbackQueryHandler(handlers.handle_callback))

@@ -15,11 +15,6 @@ nest_asyncio.apply()
 async def main():
     print("🍣 Starting SushiVideo Orchestrator...")
     
-    # 0. Write YouTube cookies if provided
-    if Config.YOUTUBE_COOKIES:
-        with open("cookies.txt", "w", encoding="utf-8") as f:
-            f.write(Config.YOUTUBE_COOKIES)
-            
     # 1. Init Core Services
     job_manager = JobManager()
     idle_monitor = IdleMonitor(job_manager)
