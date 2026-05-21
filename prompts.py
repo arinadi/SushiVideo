@@ -6,6 +6,7 @@ CONSTRAINTS:
 1. Each segment MUST be between {min_duration} and {max_duration} seconds long.
 2. Each segment must have a strong hook (beginning), a clear message, and a satisfying conclusion.
 3. The content must be highly engaging, emotional, or insightful.
+4. The "reason" MUST be brief (maximum 15 words).
 
 OUTPUT FORMAT:
 You must return a valid JSON object matching this exact schema, with no additional text or markdown formatting outside the JSON:

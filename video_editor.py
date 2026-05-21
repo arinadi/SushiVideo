@@ -4,44 +4,36 @@ import ffmpeg
 from config import Config
 from bot_classes import VideoMeta, Segment
 
-async def process_segments(video_meta: VideoMeta, segments: list[Segment], output_dir: str) -> list[str]:
-    """Process all segments sequentially to avoid OOM on Colab."""
-    output_files = []
-    
+async def process_single_segment(video_meta: VideoMeta, seg: Segment, output_dir: str) -> str:
+    """Process a single segment and return the output path."""
     os.makedirs(output_dir, exist_ok=True)
     
-    for seg in segments:
-        safe_title = "".join([c for c in seg.title if c.isalnum() or c in (' ', '-', '_')]).rstrip()
-        safe_title = safe_title.replace(" ", "_").lower()
-        if not safe_title:
-            safe_title = "clip"
-        output_filename = f"clip_{seg.index}_{safe_title}.mp4"
-        output_path = os.path.join(output_dir, output_filename)
+    safe_title = "".join([c for c in seg.title if c.isalnum() or c in (' ', '-', '_')]).rstrip()
+    safe_title = safe_title.replace(" ", "_").lower()
+    if not safe_title:
+        safe_title = "clip"
+    output_filename = f"clip_{seg.index}_{safe_title}.mp4"
+    output_path = os.path.join(output_dir, output_filename)
+    
+    # Write temporary segment SRT
+    temp_srt = os.path.join(output_dir, f"temp_{seg.index}.srt")
+    with open(temp_srt, "w", encoding="utf-8") as f:
+        f.write(seg.srt_content)
         
-        # Write temporary segment SRT
-        temp_srt = os.path.join(output_dir, f"temp_{seg.index}.srt")
-        with open(temp_srt, "w", encoding="utf-8") as f:
-            f.write(seg.srt_content)
-            
-        try:
-            await _render_clip(
-                source_path=video_meta.local_path,
-                start=seg.start_time,
-                end=seg.end_time,
-                srt_path=temp_srt,
-                output_path=output_path,
-                is_landscape=video_meta.is_landscape,
-                speed=Config.SPEED_FACTOR
-            )
-            output_files.append(output_path)
-        except Exception as e:
-            print(f"Error processing segment {seg.index}: {e}")
-            # Continue to next segment rather than failing entire job
-        finally:
-            if os.path.exists(temp_srt):
-                os.remove(temp_srt)
-                
-    return output_files
+    try:
+        await _render_clip(
+            source_path=video_meta.local_path,
+            start=seg.start_time,
+            end=seg.end_time,
+            srt_path=temp_srt,
+            output_path=output_path,
+            is_landscape=video_meta.is_landscape,
+            speed=Config.SPEED_FACTOR
+        )
+        return output_path
+    finally:
+        if os.path.exists(temp_srt):
+            os.remove(temp_srt)
 
 async def _render_clip(source_path: str, start: str, end: str, srt_path: str, output_path: str, is_landscape: bool, speed: float):
     """Construct and execute FFmpeg command."""
@@ -55,12 +47,7 @@ async def _render_clip(source_path: str, start: str, end: str, srt_path: str, ou
     v = stream.video
     a = stream.audio
     
-    # 1. Speed Adjustment
-    if speed != 1.0:
-        v = v.filter('setpts', f'PTS/{speed}')
-        a = a.filter('atempo', speed)
-        
-    # 2. Portrait Reformat & Blur Background
+    # 1. Portrait Reformat & Blur Background
     if is_landscape:
         # Split stream
         split = v.split()
@@ -78,7 +65,7 @@ async def _render_clip(source_path: str, start: str, end: str, srt_path: str, ou
         # Overlay fg on bg center
         v = ffmpeg.overlay(bg, fg, x='(W-w)/2', y='(H-h)/2')
     
-    # 3. Hard Subtitles
+    # 2. Hard Subtitles (Applied to the original timeline speed)
     if os.path.getsize(srt_path) > 0:
         # Note: escape path for FFmpeg filter. Absolute path is safer for ffmpeg.
         escaped_srt = os.path.abspath(srt_path).replace('\\', '/').replace(':', '\\:')
@@ -86,6 +73,11 @@ async def _render_clip(source_path: str, start: str, end: str, srt_path: str, ou
         v = v.filter('subtitles', escaped_srt, force_style=style)
     else:
         print(f"⚠️ Warning: SRT file {srt_path} is empty. Rendering clip without subtitles.")
+        
+    # 3. Speed Adjustment (Applied after subtitles are baked in)
+    if speed != 1.0:
+        v = v.filter('setpts', f'PTS/{speed}')
+        a = a.filter('atempo', speed)
     
     # 4. Output configuration
     # Use libx264, veryfast preset for Colab efficiency

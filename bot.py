@@ -196,21 +196,28 @@ async def process_queue_loop(job_manager: JobManager, idle_monitor: IdleMonitor,
                 with open(csv_path, 'rb') as f:
                     await bot.send_document(chat_id=job.chat_id, document=f, caption="📊 Validation Data")
             
-            # Phase 4: Editing
-            await notify(job, bot, f"🔪 Editing {len(segments)} clips...")
-            output_clips = await video_editor.process_segments(video_meta, segments, out_dir)
-            idle_monitor.reset()
+            # Phase 4: Editing & Delivery
+            await notify(job, bot, f"🔪 Memulai proses editing untuk {len(segments)} klip...")
             
-            # Output 2: Delivery
-            for clip in output_clips:
-                size_mb = os.path.getsize(clip) / (1024 * 1024)
-                if size_mb > Config.BOT_FILESIZE_LIMIT:
-                    await notify(job, bot, f"⚠️ Clip exceeds {Config.BOT_FILESIZE_LIMIT}MB limit ({size_mb:.1f}MB). Saved to folder: {clip}")
-                else:
-                    with open(clip, 'rb') as f:
-                        await bot.send_video(chat_id=job.chat_id, video=f)
+            for seg in segments:
+                await notify(job, bot, f"⏳ Sedang merender klip {seg.index}/{len(segments)}...")
+                try:
+                    clip_path = await video_editor.process_single_segment(video_meta, seg, out_dir)
+                    
+                    size_mb = os.path.getsize(clip_path) / (1024 * 1024)
+                    if size_mb > Config.BOT_FILESIZE_LIMIT:
+                        await notify(job, bot, f"⚠️ Klip {seg.index} melebihi batas {Config.BOT_FILESIZE_LIMIT}MB ({size_mb:.1f}MB). Tersimpan di folder lokal: {clip_path}")
+                    else:
+                        caption_text = f"📌 {seg.title}\n\n{seg.caption}\n\n💡 Reason: {seg.reason}"
+                        with open(clip_path, 'rb') as f:
+                            await bot.send_video(chat_id=job.chat_id, video=f, caption=caption_text)
+                except Exception as e:
+                    logger.error(f"Error editing segment {seg.index}: {e}")
+                    await notify(job, bot, f"❌ Gagal merender klip {seg.index}: {e}")
+                    
+                idle_monitor.reset()
                 
-            await notify(job, bot, "🍱 Order complete!")
+            await notify(job, bot, "🍱 Semua pesanan selesai dihidangkan!")
             
         except Exception as e:
             logger.error(f"Job {job.job_id} failed: {e}", exc_info=True)
