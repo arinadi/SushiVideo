@@ -51,7 +51,7 @@ for key in ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID', 'AI_API_KEY']:
 
 ## 🏗️ Architecture
 
-SushiVideo is built on the **EDNA Methodology**, featuring a robust data pipeline architecture with async threading, idle monitoring (to save Colab GPU credits), and a job queue system to handle heavy rendering tasks securely.
+SushiVideo features a robust data pipeline architecture with async threading, idle monitoring (to save Colab GPU credits), and a job queue system to handle heavy rendering tasks securely.
 
 Read the full blueprints in the `SushiVideo_plan/` directory.
 
