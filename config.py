@@ -46,6 +46,7 @@ class Config:
     ENABLE_IDLE_MONITOR = os.getenv('ENABLE_IDLE_MONITOR', 'True').lower() == 'true'
     IDLE_SHUTDOWN_MINUTES = int(os.getenv('IDLE_SHUTDOWN_MINUTES', 10))
     BOT_FILESIZE_LIMIT = int(os.getenv('BOT_FILESIZE_LIMIT', 50))
+    YOUTUBE_COOKIES = os.environ.get('SV_YOUTUBE_COOKIES')
     
     # Colab
     IS_COLAB = True

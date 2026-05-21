@@ -24,7 +24,11 @@ def _download_sync(url: str) -> VideoMeta:
     """Synchronous download logic."""
     os.makedirs('uploads', exist_ok=True)
     
-    with yt_dlp.YoutubeDL(YDL_OPTS) as ydl:
+    opts = YDL_OPTS.copy()
+    if os.path.exists("cookies.txt"):
+        opts['cookiefile'] = "cookies.txt"
+    
+    with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
         video_path = ydl.prepare_filename(info)
         
