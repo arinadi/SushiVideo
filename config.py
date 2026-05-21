@@ -3,12 +3,6 @@ import time
 
 INIT_START = float(os.getenv('INIT_START', time.time()))
 
-# Core Secrets
-TELEGRAM_BOT_TOKEN = os.environ.get('SV_TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = os.environ.get('SV_TELEGRAM_CHAT_ID')
-if TELEGRAM_CHAT_ID:
-    TELEGRAM_CHAT_ID = int(TELEGRAM_CHAT_ID)
-
 AI_PROVIDER_DEFAULTS = {
     "gemini": {
         "model": "gemini-2.5-flash",
@@ -28,6 +22,10 @@ AI_PROVIDER_DEFAULTS = {
 }
 
 class Config:
+    # Telegram
+    TELEGRAM_TOKEN = os.environ.get('SV_TELEGRAM_BOT_TOKEN')
+    TELEGRAM_CHAT_ID = os.environ.get('SV_TELEGRAM_CHAT_ID')
+
     # AI Provider
     AI_PROVIDER = os.getenv('AI_PROVIDER', 'gemini')
     AI_API_KEY = os.environ.get('SV_AI_API_KEY')
@@ -48,10 +46,6 @@ class Config:
     ENABLE_IDLE_MONITOR = os.getenv('ENABLE_IDLE_MONITOR', 'True').lower() == 'true'
     IDLE_SHUTDOWN_MINUTES = int(os.getenv('IDLE_SHUTDOWN_MINUTES', 10))
     BOT_FILESIZE_LIMIT = int(os.getenv('BOT_FILESIZE_LIMIT', 50))
-
-# Colab Detection
-try:
-    from google.colab import runtime
+    
+    # Colab
     IS_COLAB = True
-except ImportError:
-    IS_COLAB = False
