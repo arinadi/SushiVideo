@@ -42,11 +42,12 @@ class TranscriptData:
 @dataclass
 class Segment:
     index: int
-    start: float | str
-    end_time: float | str
+    start_time: str  # Format: "HH:MM:SS.mmm"
+    end_time: str    # Format: "HH:MM:SS.mmm"
     title: str
     reason: str
     caption: str
+    srt_content: str = "" # Subset of original SRT just for this segment
 
 @dataclass
 class ClipJob:
