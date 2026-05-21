@@ -47,7 +47,10 @@ async def _render_clip(source_path: str, start: str, end: str, srt_path: str, ou
     """Construct and execute FFmpeg command."""
     
     # Fast seek using -ss before input
-    stream = ffmpeg.input(source_path, ss=start, to=end)
+    # FFmpeg expects dot instead of comma for fractional seconds
+    start_ff = start.replace(',', '.')
+    end_ff = end.replace(',', '.')
+    stream = ffmpeg.input(source_path, ss=start_ff, to=end_ff)
     
     v = stream.video
     a = stream.audio
