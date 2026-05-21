@@ -5,7 +5,7 @@ import ffmpeg
 from bot_classes import VideoMeta
 
 YDL_OPTS = {
-    'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+    'format': 'bestvideo+bestaudio/best',
     'outtmpl': 'uploads/%(id)s.%(ext)s',
     'writesubtitles': False,
     'writeautomaticsub': False,
