@@ -59,5 +59,16 @@ SushiVideo features a robust data pipeline architecture with async threading, id
 
 Read the full blueprints in the `SushiVideo_plan/` directory.
 
+## 💻 Development
+
+If you are contributing to SushiVideo, you can run linting checks directly inside Google Colab without needing to set up a local environment.
+
+Run this cell in Colab to clone the repo, install the linter (`flake8`), and check the code for errors:
+
+```python
+# @title 🔍 Run SushiVideo Linter
+!curl -s https://raw.githubusercontent.com/arinadi/SushiVideo/main/lint.py -o lint.py && python lint.py
+```
+
 ---
 *Built for solo creators who want to dominate short-form content without breaking the bank.*
