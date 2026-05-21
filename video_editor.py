@@ -76,10 +76,13 @@ async def _render_clip(source_path: str, start: str, end: str, srt_path: str, ou
         v = ffmpeg.overlay(bg, fg, x='(W-w)/2', y='(H-h)/2')
     
     # 3. Hard Subtitles
-    # Note: escape path for FFmpeg filter. Absolute path is safer for ffmpeg.
-    escaped_srt = os.path.abspath(srt_path).replace('\\', '/').replace(':', '\\:')
-    style = f"FontSize={Config.SUBTITLE_FONT_SIZE},FontName=Arial,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=2,Alignment=2,MarginV=60,Bold=1"
-    v = v.filter('subtitles', escaped_srt, force_style=style)
+    if os.path.getsize(srt_path) > 0:
+        # Note: escape path for FFmpeg filter. Absolute path is safer for ffmpeg.
+        escaped_srt = os.path.abspath(srt_path).replace('\\', '/').replace(':', '\\:')
+        style = f"FontSize={Config.SUBTITLE_FONT_SIZE},FontName=Arial,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=2,Alignment=2,MarginV=60,Bold=1"
+        v = v.filter('subtitles', escaped_srt, force_style=style)
+    else:
+        print(f"⚠️ Warning: SRT file {srt_path} is empty. Rendering clip without subtitles.")
     
     # 4. Output configuration
     # Use libx264, veryfast preset for Colab efficiency
