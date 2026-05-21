@@ -1,5 +1,9 @@
 # 🍣 SushiVideo
 
+<p align="center">
+  <img src="assets/logo.png" width="250" alt="SushiVideo Logo" />
+</p>
+
 > **"Cut the best piece. Serve it in one bite."**
 
 SushiVideo is a powerful, zero-cost, and highly portable AI video clipper. It transforms long-form YouTube videos into viral-ready, portrait short clips (TikTok, Reels, Shorts) with hardcoded subtitles—**all running 100% free on Google Colab's GPU infrastructure.**
