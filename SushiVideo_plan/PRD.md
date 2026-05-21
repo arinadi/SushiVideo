@@ -117,10 +117,10 @@ Unlike competitors that go straight to final output, SushiVideo splits the pipel
 ### BF-5: Configuration
 | Field | Type | Default | Description |
 |:---|:---|:---|:---|
-| `TELEGRAM_BOT_TOKEN` | `secret` | — | Bot token from BotFather |
-| `TELEGRAM_CHAT_ID` | `secret` | — | Admin chat ID |
+| `SV_TELEGRAM_BOT_TOKEN` | `secret` | — | Bot token from BotFather |
+| `SV_TELEGRAM_CHAT_ID` | `secret` | — | Admin chat ID |
 | `AI_PROVIDER` | `enum` | `gemini` | Segment selection AI provider (`gemini`, `openai`, `anthropic`) |
-| `AI_API_KEY` | `secret` | — | API key for the selected AI provider |
+| `SV_AI_API_KEY` | `secret` | — | API key for the selected AI provider |
 | `AI_MODEL` | `string` | `gemini-2.5-flash` | Model name for the selected provider |
 | `WHISPER_MODEL` | `string` | `large-v2` | Faster-Whisper model size |
 | `SPEED_FACTOR` | `float` | `1.25` | Playback speed multiplier |

@@ -23,10 +23,10 @@ No UI. Configuration module only.
 
 | Field | Type | Default | Env Var |
 |:---|:---|:---|:---|
-| `TELEGRAM_BOT_TOKEN` | `str` | — | `TELEGRAM_BOT_TOKEN` |
-| `TELEGRAM_CHAT_ID` | `int` | — | `TELEGRAM_CHAT_ID` |
+| `TELEGRAM_BOT_TOKEN` | `str` | — | `SV_TELEGRAM_BOT_TOKEN` |
+| `TELEGRAM_CHAT_ID` | `int` | — | `SV_TELEGRAM_CHAT_ID` |
 | `AI_PROVIDER` | `str` | `gemini` | `AI_PROVIDER` |
-| `AI_API_KEY` | `str` | — | `AI_API_KEY` |
+| `AI_API_KEY` | `str` | — | `SV_AI_API_KEY` |
 | `AI_MODEL` | `str` | (per-provider default) | `AI_MODEL` |
 | `WHISPER_MODEL` | `str` | `large-v2` | `WHISPER_MODEL` |
 | `SPEED_FACTOR` | `float` | `1.25` | `SPEED_FACTOR` |
@@ -71,15 +71,15 @@ import time
 INIT_START = float(os.getenv('INIT_START', time.time()))
 
 # Core Secrets
-TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+TELEGRAM_BOT_TOKEN = os.environ.get('SV_TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.environ.get('SV_TELEGRAM_CHAT_ID')
 if TELEGRAM_CHAT_ID:
     TELEGRAM_CHAT_ID = int(TELEGRAM_CHAT_ID)
 
 class Config:
     # AI Provider
     AI_PROVIDER = os.getenv('AI_PROVIDER', 'gemini')
-    AI_API_KEY = os.environ.get('AI_API_KEY')
+    AI_API_KEY = os.environ.get('SV_AI_API_KEY')
     AI_MODEL = os.getenv('AI_MODEL', '')  # Empty = use provider default
     
     # Whisper

@@ -24,10 +24,11 @@ import os
 from google.colab import userdata
 
 # 1. Load Secrets
-for key in ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID', 'AI_API_KEY']:
+for key in ['SV_TELEGRAM_BOT_TOKEN', 'SV_TELEGRAM_CHAT_ID', 'SV_AI_API_KEY']:
     try:
         val = userdata.get(key)
-        if val: os.environ[key] = str(val)
+        if val: os.environ[key.replace('SV_', '')] = str(val) # Map SV_ back to standard internally if needed, or keep SV_
+
     except: pass
 
 # Optional secrets
@@ -46,9 +47,9 @@ for key in ['AI_PROVIDER', 'AI_MODEL', 'GITHUB_TOKEN']:
 **Environment Variables Set:**
 | Variable | Source | Required |
 |:---|:---|:---|
-| `TELEGRAM_BOT_TOKEN` | Colab Secrets | ✅ |
-| `TELEGRAM_CHAT_ID` | Colab Secrets | ✅ |
-| `AI_API_KEY` | Colab Secrets | ✅ |
+| `SV_TELEGRAM_BOT_TOKEN` | Colab Secrets | ✅ |
+| `SV_TELEGRAM_CHAT_ID` | Colab Secrets | ✅ |
+| `SV_AI_API_KEY` | Colab Secrets | ✅ |
 | `AI_PROVIDER` | Colab Secrets | ❌ (default: `gemini`) |
 | `AI_MODEL` | Colab Secrets | ❌ (default: `gemini-2.5-flash`) |
 | `INIT_START` | Set by `runner.py` | Auto |
@@ -89,5 +90,5 @@ nest_asyncio
 |:---|:---|:---|:---|
 | T0-1 | GPU detected | `nvidia-smi` returns 0 | Binary |
 | T0-2 | Dependencies installed | `python -c "import telegram, yt_dlp, faster_whisper, genai, gradio"` | Binary |
-| T0-3 | Secrets loaded | `os.environ.get('TELEGRAM_BOT_TOKEN')` is not None | Binary |
+| T0-3 | Secrets loaded | `os.environ.get('SV_TELEGRAM_BOT_TOKEN')` is not None | Binary |
 | T0-4 | Directories created | `os.path.isdir('uploads')` and `os.path.isdir('video_clipper')` | Binary |
