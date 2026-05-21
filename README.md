@@ -35,7 +35,6 @@ Run SushiVideo instantly in your browser with zero local setup.
    - `SV_TELEGRAM_BOT_TOKEN`
    - `SV_TELEGRAM_CHAT_ID`
    - `SV_AI_API_KEY` (Gemini API Key)
-   - `SV_YOUTUBE_COOKIES` (Optional: Netscape format cookies.txt to bypass YouTube 429 bans)
 4. Paste and run the following cell:
 
 ```python
@@ -44,7 +43,7 @@ import os
 from google.colab import userdata
 
 # 1. Load Secrets
-for key in ['SV_TELEGRAM_BOT_TOKEN', 'SV_TELEGRAM_CHAT_ID', 'SV_AI_API_KEY', 'SV_YOUTUBE_COOKIES']:
+for key in ['SV_TELEGRAM_BOT_TOKEN', 'SV_TELEGRAM_CHAT_ID', 'SV_AI_API_KEY']:
     try:
         val = userdata.get(key)
         if val: os.environ[key] = str(val)
