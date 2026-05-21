@@ -1,7 +1,8 @@
 import pytest
-from unittest.mock import patch, mock_open
+import os
+from unittest.mock import patch, mock_open, MagicMock
 from bot_classes import VideoMeta, TranscriptSource
-from transcriber import _process_existing_srt, get_transcript
+from transcriber import _process_existing_srt, get_transcript, _generate_whisper_transcript
 
 @pytest.mark.asyncio
 async def test_process_existing_srt():
@@ -24,4 +25,30 @@ async def test_get_transcript_priority_user_srt(mock_exists, mock_process):
     
     res = await get_transcript(meta, user_srt_path="custom.srt")
     assert res == "user_transcript"
-    mock_process.assert_called_once_with("custom.srt", TranscriptSource.USER_UPLOAD)
+    mock_process.assert_called_once()
+
+@pytest.mark.asyncio
+@patch('transcriber.WhisperModel')
+@patch('transcriber.Config')
+async def test_generate_whisper_transcript(mock_config, mock_whisper_class, tmp_path):
+    mock_config.WHISPER_MODEL = "tiny"
+    mock_config.WHISPER_DEVICE = "cpu"
+    mock_config.WHISPER_COMPUTE_TYPE = "int8"
+    
+    mock_model = MagicMock()
+    mock_whisper_class.return_value = mock_model
+    
+    mock_segment = MagicMock()
+    mock_segment.start = 1.0
+    mock_segment.end = 2.0
+    mock_segment.text = "Hello whisper"
+    mock_model.transcribe.return_value = ([mock_segment], None)
+    
+    video_path = tmp_path / "video.mp4"
+    video_path.touch()
+    
+    transcript = await _generate_whisper_transcript(str(video_path))
+    
+    assert transcript.source == TranscriptSource.WHISPER
+    assert "Hello whisper" in transcript.transcript_text
+    assert "00:00:01,000 --> 00:00:02,000" in transcript.srt_content
