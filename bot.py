@@ -49,10 +49,15 @@ class BotHandlers:
         if not await auth_check(update):
             return
             
-        url = update.message.text
-        if "youtube.com" not in url and "youtu.be" not in url:
+        import re
+        url_text = update.message.text or ""
+        url_match = re.search(r'(https?://[^\s]+)', url_text)
+        
+        if not url_match or ("youtube.com" not in url_match.group(1) and "youtu.be" not in url_match.group(1)):
             await update.message.reply_text("❌ Please send a valid YouTube URL.")
             return
+            
+        url = url_match.group(1)
             
         job = ClipJob(
             job_id=generate_id(),
@@ -74,10 +79,15 @@ class BotHandlers:
             await update.message.reply_text("❌ Please upload a valid .srt file.")
             return
             
-        url = update.message.caption
-        if not url or ("youtube.com" not in url and "youtu.be" not in url):
-            await update.message.reply_text("❌ Please provide the YouTube URL in the caption of the file.")
+        import re
+        url_text = update.message.caption or ""
+        url_match = re.search(r'(https?://[^\s]+)', url_text)
+        
+        if not url_match or ("youtube.com" not in url_match.group(1) and "youtu.be" not in url_match.group(1)):
+            await update.message.reply_text("❌ Please provide a valid YouTube URL in the caption of the file.")
             return
+            
+        url = url_match.group(1)
             
         file = await context.bot.get_file(doc.file_id)
         os.makedirs("uploads", exist_ok=True)
