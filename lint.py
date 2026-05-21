@@ -38,8 +38,7 @@ else:
 print("\n🧪 Running Pytest (TDD) with Coverage...")
 result_test = subprocess.run([
     sys.executable, "-m", "pytest", "tests/", 
-    "--cov=.", "--cov-report=term-missing", 
-    "--cov-omit=tests/*,lint.py,runner.py,start.py"
+    "--cov=.", "--cov-report=term-missing"
 ])
 
 if result_lint.returncode == 0 and result_test.returncode == 0:
