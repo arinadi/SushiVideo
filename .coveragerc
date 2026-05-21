@@ -1,0 +1,9 @@
+[run]
+omit = 
+    bot.py
+    gradio_ui.py
+    lint.py
+    main.py
+    runner.py
+    start.py
+    tests/*
