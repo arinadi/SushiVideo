@@ -67,12 +67,12 @@ Run this cell in Colab to clone the repo, install the linter (`flake8`) and `pyt
 
 ```python
 # @title 🔍 Run SushiVideo Linter & Tests
-!curl -s https://raw.githubusercontent.com/arinadi/SushiVideo/main/lint.py -o lint.py && python lint.py
+!curl -s "https://raw.githubusercontent.com/arinadi/SushiVideo/main/lint.py?v=3" -o lint.py && python lint.py
 ```
 
 ```python
 # @title 🎨 Run Gradio UI Mockup (Standalone)
-!curl -s https://raw.githubusercontent.com/arinadi/SushiVideo/main/gradio_ui.py -o gradio_ui.py && python gradio_ui.py
+!curl -s "https://raw.githubusercontent.com/arinadi/SushiVideo/main/gradio_ui.py?v=3" -o gradio_ui.py && python gradio_ui.py
 ```
 
 ---
