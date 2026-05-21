@@ -14,8 +14,10 @@ def test_idle_monitor_reset():
     assert monitor.last_activity > old_time
 
 @pytest.mark.asyncio
+@patch('idle_monitor.Config')
 @patch('idle_monitor.os._exit')
-async def test_monitor_loop_shutdown(mock_exit):
+async def test_monitor_loop_shutdown(mock_exit, mock_config):
+    mock_config.IS_COLAB = False
     jm = JobManager()
     monitor = IdleMonitor(jm)
     monitor.enabled = True

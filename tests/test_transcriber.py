@@ -29,11 +29,7 @@ async def test_get_transcript_priority_user_srt(mock_exists, mock_process):
 
 @pytest.mark.asyncio
 @patch('transcriber.WhisperModel')
-@patch('transcriber.Config')
-async def test_generate_whisper_transcript(mock_config, mock_whisper_class, tmp_path):
-    mock_config.WHISPER_MODEL = "tiny"
-    mock_config.WHISPER_DEVICE = "cpu"
-    mock_config.WHISPER_COMPUTE_TYPE = "int8"
+async def test_generate_whisper_transcript(mock_whisper_class, tmp_path):
     
     mock_model = MagicMock()
     mock_whisper_class.return_value = mock_model

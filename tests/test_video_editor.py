@@ -34,7 +34,15 @@ async def test_render_clip(mock_input, mock_output, mock_run, tmp_path):
     with open(srt_path, "w") as f:
         f.write("dummy")
         
-    await _render_clip(meta, seg, out_path, srt_path)
+    await _render_clip(
+        source_path=meta.local_path,
+        start=seg.start_time,
+        end=seg.end_time,
+        srt_path=srt_path,
+        output_path=out_path,
+        is_landscape=meta.is_landscape,
+        speed=1.0
+    )
     
     mock_input.assert_called()
     mock_run.assert_called()
