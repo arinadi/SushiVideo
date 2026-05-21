@@ -61,6 +61,37 @@ class BotHandlers:
         await self.job_manager.add_job(job)
         await update.message.reply_text(f"✅ Order queued: {url}")
 
+    async def handle_document(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.idle_monitor.reset()
+        if not await auth_check(update):
+            return
+            
+        doc = update.message.document
+        if not doc.file_name.lower().endswith('.srt'):
+            await update.message.reply_text("❌ Please upload a valid .srt file.")
+            return
+            
+        url = update.message.caption
+        if not url or ("youtube.com" not in url and "youtu.be" not in url):
+            await update.message.reply_text("❌ Please provide the YouTube URL in the caption of the file.")
+            return
+            
+        file = await context.bot.get_file(doc.file_id)
+        os.makedirs("uploads", exist_ok=True)
+        safe_path = os.path.join("uploads", f"{doc.file_id}.srt")
+        await file.download_to_drive(safe_path)
+        
+        job = ClipJob(
+            job_id=generate_id(),
+            source_url=url,
+            srt_file=safe_path,
+            chat_id=update.message.chat_id,
+            message_id=update.message.message_id
+        )
+        
+        await self.job_manager.add_job(job)
+        await update.message.reply_text(f"✅ Order queued with custom SRT: {url}")
+
 async def process_queue_loop(job_manager: JobManager, idle_monitor: IdleMonitor, bot: Bot):
     while True:
         job = await job_manager.queue.get()
@@ -69,14 +100,19 @@ async def process_queue_loop(job_manager: JobManager, idle_monitor: IdleMonitor,
         
         try:
             # Phase 1: Download
-            await notify(job, bot, "🐟 Downloading video...")
-            video_meta = await downloader.download_video(job.source_url)
+            if job.source_url:
+                await notify(job, bot, "🐟 Downloading video...")
+                video_meta = await downloader.download_video(job.source_url)
+            else:
+                await notify(job, bot, "🐟 Analyzing uploaded video...")
+                video_meta = await downloader.process_uploaded_file(job.source_file)
+                
             job.video_meta = video_meta
             idle_monitor.reset()
             
             # Phase 2: Transcribe
             await notify(job, bot, "🤖 Extracting/Generating transcript...")
-            transcript_data = await transcriber.get_transcript(video_meta, job.source_file)
+            transcript_data = await transcriber.get_transcript(video_meta, job.srt_file)
             job.transcript_data = transcript_data
             idle_monitor.reset()
             
@@ -129,6 +165,7 @@ def get_application(job_manager: JobManager, idle_monitor: IdleMonitor) -> Appli
     handlers = BotHandlers(job_manager, idle_monitor)
     app.add_handler(CommandHandler("start", handlers.start_cmd))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_url))
+    app.add_handler(MessageHandler(filters.Document.ALL, handlers.handle_document))
     
     # Store process loop method in JobManager for main.py to call
     job_manager.process_queue_loop = lambda: process_queue_loop(job_manager, idle_monitor, app.bot)
