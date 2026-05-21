@@ -17,13 +17,9 @@ async def test_process_segments(mock_render, tmp_path):
     mock_render.assert_called_once()
 
 @pytest.mark.asyncio
-@patch('video_editor.ffmpeg.run')
-@patch('video_editor.ffmpeg.output')
-@patch('video_editor.ffmpeg.input')
-async def test_render_clip(mock_input, mock_output, mock_run, tmp_path):
-    mock_input.return_value = MagicMock()
-    mock_output.return_value = MagicMock()
-    mock_run.return_value = None
+@patch('video_editor.asyncio.to_thread')
+async def test_render_clip(mock_to_thread, tmp_path):
+    mock_to_thread.return_value = None
     
     meta = VideoMeta(local_path="v.mp4", duration=10, width=1920, height=1080, is_landscape=True, original_filename="v", has_youtube_subs=False)
     seg = Segment(index=1, start_time="00:00:01,000", end_time="00:00:02,000", title="A", reason="B", caption="C", srt_content="1\n00:00:01,000 --> 00:00:02,000\nA")
@@ -44,5 +40,4 @@ async def test_render_clip(mock_input, mock_output, mock_run, tmp_path):
         speed=1.0
     )
     
-    mock_input.assert_called()
-    mock_run.assert_called()
+    mock_to_thread.assert_called_once()

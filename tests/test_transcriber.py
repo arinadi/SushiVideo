@@ -38,7 +38,11 @@ async def test_generate_whisper_transcript(mock_whisper_class, tmp_path):
     mock_segment.start = 1.0
     mock_segment.end = 2.0
     mock_segment.text = "Hello whisper"
-    mock_model.transcribe.return_value = ([mock_segment], None)
+    
+    mock_info = MagicMock()
+    mock_info.language = "en"
+    
+    mock_model.transcribe.return_value = ([mock_segment], mock_info)
     
     video_path = tmp_path / "video.mp4"
     video_path.touch()
