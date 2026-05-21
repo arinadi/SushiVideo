@@ -53,9 +53,23 @@ class BotHandlers:
         if len(text) > 8:
             cookie_content = text.replace("/cookie", "", 1).strip()
             if "# Netscape" in cookie_content:
+                # Fix Telegram destroying tabs (convert first 6 spaces of each line to tabs)
+                fixed_lines = []
+                for line in cookie_content.split('\n'):
+                    if line.startswith('#') or not line.strip():
+                        fixed_lines.append(line)
+                    elif '\t' not in line:
+                        parts = line.split(' ', 6)
+                        if len(parts) == 7:
+                            fixed_lines.append('\t'.join(parts))
+                        else:
+                            fixed_lines.append(line)
+                    else:
+                        fixed_lines.append(line)
+                
                 with open("cookies.txt", "w", encoding="utf-8") as f:
-                    f.write(cookie_content)
-                await update.message.reply_text("✅ Teks cookies berhasil disimpan! Anda siap mengunduh YouTube lagi.")
+                    f.write('\n'.join(fixed_lines))
+                await update.message.reply_text("✅ Teks cookies berhasil dipulihkan & disimpan! Anda siap mengunduh YouTube lagi.")
                 return
                 
         await update.message.reply_text("🍪 Untuk memperbarui cookies YouTube, silakan unggah file `cookies.txt` (atau sertakan `/cookie` di caption), atau *paste* isi teksnya langsung dengan perintah:\n`/cookie # Netscape HTTP Cookie File...`", parse_mode="Markdown")
