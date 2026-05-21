@@ -18,8 +18,8 @@ else:
 os.chdir(CLONE_DIR)
 
 # 2. Install dependencies
-print("📦 Installing dependencies (flake8, pytest, pytest-asyncio)...")
-subprocess.run([sys.executable, "-m", "pip", "install", "flake8", "pytest", "pytest-asyncio", "-q"], check=True)
+print("📦 Installing dependencies (flake8, pytest, pytest-asyncio, pytest-cov)...")
+subprocess.run([sys.executable, "-m", "pip", "install", "flake8", "pytest", "pytest-asyncio", "pytest-cov", "-q"], check=True)
 subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "-q"], check=True)
 
 # 3. Run Linter
@@ -35,8 +35,12 @@ else:
     print("❌ Linting failed.")
 
 # 4. Run Pytest
-print("\n🧪 Running Pytest (TDD)...")
-result_test = subprocess.run([sys.executable, "-m", "pytest", "tests/"])
+print("\n🧪 Running Pytest (TDD) with Coverage...")
+result_test = subprocess.run([
+    sys.executable, "-m", "pytest", "tests/", 
+    "--cov=.", "--cov-report=term-missing", 
+    "--cov-omit=tests/*,lint.py,runner.py,start.py"
+])
 
 if result_lint.returncode == 0 and result_test.returncode == 0:
     print("\n✅ All checks (Lint & Tests) passed successfully!")
