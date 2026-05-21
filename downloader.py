@@ -7,10 +7,8 @@ from bot_classes import VideoMeta
 YDL_OPTS = {
     'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
     'outtmpl': 'uploads/%(id)s.%(ext)s',
-    'writesubtitles': True,
-    'writeautomaticsub': True,
-    'subtitlesformat': 'srt',
-    'subtitleslangs': ['id', 'en'],  # Indonesian first, English fallback
+    'writesubtitles': False,
+    'writeautomaticsub': False,
     'merge_output_format': 'mp4',
     'quiet': True,
     'no_warnings': True,

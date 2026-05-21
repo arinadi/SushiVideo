@@ -96,9 +96,11 @@ def build_ui(job_mgr=None):
                 
         gr.Markdown("### Live Processing Log")
         log_output = gr.Textbox(lines=10, interactive=False, label="Log")
+        refresh_btn = gr.Button("🔄 Refresh Logs")
+        refresh_btn.click(get_logs, outputs=log_output)
         
-        # Auto-refresh log every 2 seconds
-        app.load(get_logs, outputs=log_output, every=2)
+        # Load logs once on startup
+        app.load(get_logs, outputs=log_output)
         
     return app
 
