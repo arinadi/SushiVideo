@@ -1,0 +1,67 @@
+{
+  "project": "SushiVideo",
+  "created_at": "2026-05-21T10:55:00+07:00",
+  "last_updated": "2026-05-21T11:05:00+07:00",
+  "phases": {
+    "phase_0_context": {
+      "status": "completed",
+      "started_at": "2026-05-21T10:55:00+07:00",
+      "completed_at": "2026-05-21T11:05:00+07:00"
+    },
+    "phase_1_prd": {
+      "status": "completed",
+      "started_at": "2026-05-21T11:20:00+07:00",
+      "completed_at": "2026-05-21T11:22:00+07:00"
+    },
+    "phase_2_architecture": {
+      "status": "completed",
+      "started_at": "2026-05-21T11:37:00+07:00",
+      "completed_at": "2026-05-21T11:40:00+07:00"
+    },
+    "phase_3_modules": {
+      "status": "completed",
+      "started_at": "2026-05-21T11:56:00+07:00",
+      "completed_at": "2026-05-21T12:01:00+07:00"
+    },
+    "phase_4_agent": {
+      "status": "completed",
+      "started_at": "2026-05-21T12:06:00+07:00",
+      "completed_at": "2026-05-21T12:08:00+07:00"
+    }
+  },
+  "discovery_gate": {
+    "why": "Existing video clippers require local GPU/storage/bandwidth. SushiVideo leverages Google Colab's free infrastructure (GPU, fast internet, storage) to process large videos into short clips — making it extremely portable and zero-cost.",
+    "who": "Solo content creators who repurpose long YouTube videos into TikTok/Reels shorts, especially those without a powerful local PC.",
+    "core": "Full pipeline: Input (YouTube URL via Telegram or large video upload via Gradio, + optional SRT) → AI segment selection → automated FFmpeg editing (portrait reformat, 1.25x speed, hardsub) → finished short clips delivered via Telegram. Output 1 (CSV + SRT) is intermediate validation.",
+    "landscape": "Greenfield — new project from scratch. TTB (D:\\TTB) serves as reference only for patterns, not copy-paste.",
+    "success": "Given a 1-hour YouTube video URL, SushiVideo produces 3-5 portrait short clips with hardsubs and delivers them to Telegram on a Colab GPU."
+  },
+  "project_mode": "data-pipeline",
+  "constraints": {
+    "runtime": "Google Colab (GPU required, no CPU support)",
+    "gpu": "Colab default GPU (T4)",
+    "reference_project": "D:\\TTB",
+    "delivery_channel": "Telegram Bot"
+  },
+  "existing_assets": {
+    "TTB": {
+      "path": "D:\\TTB",
+      "role": "Reference only",
+      "reusable_patterns": [
+        "Telegram bot architecture (python-telegram-bot)",
+        "Colab runtime detection and auto-shutdown",
+        "Idle monitor with extend timer",
+        "Job queue system (asyncio.Queue)",
+        "Gemini API integration (google-genai)",
+        "Config class with env vars",
+        "runner.py bootstrap pattern",
+        "start.py hardware detection",
+        "Whisper/audio transcription"
+      ],
+      "patterns_to_avoid": [
+        "Multi-part ZIP handling (not needed)",
+        "Journalist summary prompt (not needed)"
+      ]
+    }
+  }
+}
