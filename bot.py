@@ -16,6 +16,9 @@ import video_editor
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Silence httpx logs to prevent getUpdates spam
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 async def auth_check(update: Update) -> bool:
     """Check if the user is authorized based on TELEGRAM_CHAT_ID."""
     if not Config.TELEGRAM_CHAT_ID:
