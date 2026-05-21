@@ -70,5 +70,10 @@ Run this cell in Colab to clone the repo, install the linter (`flake8`) and `pyt
 !curl -s https://raw.githubusercontent.com/arinadi/SushiVideo/main/lint.py -o lint.py && python lint.py
 ```
 
+```python
+# @title 🎨 Run Gradio UI Mockup (Standalone)
+!curl -s https://raw.githubusercontent.com/arinadi/SushiVideo/main/gradio_ui.py -o gradio_ui.py && python gradio_ui.py
+```
+
 ---
 *Built for solo creators who want to dominate short-form content without breaking the bank.*
