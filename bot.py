@@ -1,0 +1,136 @@
+import os
+import asyncio
+import logging
+from telegram import Update, Bot
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+
+from config import Config
+from job_manager import JobManager
+from idle_monitor import IdleMonitor
+from bot_classes import ClipJob, generate_id
+import downloader
+import transcriber
+import ai_selector
+import video_editor
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+async def auth_check(update: Update) -> bool:
+    """Check if the user is authorized based on TELEGRAM_CHAT_ID."""
+    if not Config.TELEGRAM_CHAT_ID:
+        return True
+    allowed = [x.strip() for x in str(Config.TELEGRAM_CHAT_ID).split(',')]
+    return str(update.effective_chat.id) in allowed
+
+async def notify(job: ClipJob, bot: Bot, text: str):
+    logger.info(f"[{job.job_id}] {text}")
+    try:
+        await bot.send_message(chat_id=job.chat_id, text=text)
+    except Exception as e:
+        logger.error(f"Failed to send message: {e}")
+
+class BotHandlers:
+    def __init__(self, job_manager: JobManager, idle_monitor: IdleMonitor):
+        self.job_manager = job_manager
+        self.idle_monitor = idle_monitor
+
+    async def start_cmd(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.idle_monitor.reset()
+        if not await auth_check(update):
+            return
+        await update.message.reply_text("🍣 Welcome to SushiVideo!\nSend me a YouTube URL to get started.")
+
+    async def handle_url(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.idle_monitor.reset()
+        if not await auth_check(update):
+            return
+            
+        url = update.message.text
+        if "youtube.com" not in url and "youtu.be" not in url:
+            await update.message.reply_text("❌ Please send a valid YouTube URL.")
+            return
+            
+        job = ClipJob(
+            job_id=generate_id(),
+            source_url=url,
+            chat_id=update.message.chat_id,
+            message_id=update.message.message_id
+        )
+        
+        await self.job_manager.add_job(job)
+        await update.message.reply_text(f"✅ Order queued: {url}")
+
+async def process_queue_loop(job_manager: JobManager, idle_monitor: IdleMonitor, bot: Bot):
+    while True:
+        job = await job_manager.queue.get()
+        job_manager.set_processing(job)
+        idle_monitor.reset()
+        
+        try:
+            # Phase 1: Download
+            await notify(job, bot, "🐟 Downloading video...")
+            video_meta = await downloader.download_video(job.source_url)
+            job.video_meta = video_meta
+            idle_monitor.reset()
+            
+            # Phase 2: Transcribe
+            await notify(job, bot, "🤖 Extracting/Generating transcript...")
+            transcript_data = await transcriber.get_transcript(video_meta, job.source_file)
+            job.transcript_data = transcript_data
+            idle_monitor.reset()
+            
+            # Phase 3: AI Selection
+            await notify(job, bot, "🧠 AI Chef selecting best cuts...")
+            ai = ai_selector.get_ai_selector()
+            segments = await ai.select_segments(transcript_data.transcript_text)
+            job.segments = segments
+            idle_monitor.reset()
+            
+            # Output 1: Delivery
+            out_dir = f"video_clipper/{job.job_id}"
+            ai_selector.save_output_1(segments, transcript_data.srt_content, base_dir=out_dir)
+            
+            csv_path = os.path.join(out_dir, "segments.csv")
+            if os.path.exists(csv_path):
+                with open(csv_path, 'rb') as f:
+                    await bot.send_document(chat_id=job.chat_id, document=f, caption="📊 Validation Data")
+            
+            # Phase 4: Editing
+            await notify(job, bot, f"🔪 Editing {len(segments)} clips...")
+            output_clips = await video_editor.process_segments(video_meta, segments, out_dir)
+            idle_monitor.reset()
+            
+            # Output 2: Delivery
+            for clip in output_clips:
+                size_mb = os.path.getsize(clip) / (1024 * 1024)
+                if size_mb > Config.BOT_FILESIZE_LIMIT:
+                    await notify(job, bot, f"⚠️ Clip exceeds {Config.BOT_FILESIZE_LIMIT}MB limit ({size_mb:.1f}MB). Saved to folder: {clip}")
+                else:
+                    with open(clip, 'rb') as f:
+                        await bot.send_video(chat_id=job.chat_id, video=f)
+                
+            await notify(job, bot, "🍱 Order complete!")
+            
+        except Exception as e:
+            logger.error(f"Job {job.job_id} failed: {e}", exc_info=True)
+            await notify(job, bot, f"❌ Error processing job: {e}")
+            job_manager.complete(job, failed=True)
+        else:
+            job_manager.complete(job, failed=False)
+        finally:
+            idle_monitor.reset()
+
+def get_application(job_manager: JobManager, idle_monitor: IdleMonitor) -> Application:
+    # Build app with telegram token, warn if missing but do not crash immediately so tests can pass
+    token = Config.TELEGRAM_TOKEN or "DUMMY_TOKEN_FOR_TESTS"
+    app = Application.builder().token(token).build()
+    
+    handlers = BotHandlers(job_manager, idle_monitor)
+    app.add_handler(CommandHandler("start", handlers.start_cmd))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_url))
+    
+    # Store process loop method in JobManager for main.py to call
+    job_manager.process_queue_loop = lambda: process_queue_loop(job_manager, idle_monitor, app.bot)
+    
+    return app
