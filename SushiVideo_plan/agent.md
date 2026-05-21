@@ -29,8 +29,9 @@ Before writing any code for the new module:
 3. Adhere to the Design System in `design.md` for any Telegram Markdown output.
 
 ### Step 3: Validation Gate
-1. Run the specific testing commands listed at the bottom of the module spec.
-2. Verify that there are no syntax errors.
+1. Write/update unit tests for the module in the `tests/` directory using `pytest` and mock implementations for I/O heavy logic.
+2. Run the specific testing commands listed at the bottom of the module spec (via `lint.py` or manually).
+3. Verify that there are no syntax errors and all TDD checks pass with high coverage.
 
 ### Step 4: Self-Reflection
 Pause and explicitly state your findings on:
