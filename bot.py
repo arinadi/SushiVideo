@@ -2,7 +2,7 @@ import os
 import asyncio
 import logging
 from telegram import Update, Bot
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
 from config import Config
 from job_manager import JobManager
@@ -95,6 +95,19 @@ class BotHandlers:
         await self.job_manager.add_job(job)
         await update.message.reply_text(f"✅ Order queued with custom SRT: {url}")
 
+    async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        query = update.callback_query
+        await query.answer()
+        
+        if query.data == "extend_idle":
+            if self.idle_monitor.extend_timer(5):
+                await query.edit_message_text(
+                    f"✅ *Idle Extended*\nTimer added +5 minutes.\n_Action by {query.from_user.first_name}_",
+                    parse_mode="Markdown"
+                )
+            else:
+                await query.edit_message_text("ℹ️ Bot is already active, no need to extend.")
+
 async def process_queue_loop(job_manager: JobManager, idle_monitor: IdleMonitor, bot: Bot):
     while True:
         job = await job_manager.queue.get()
@@ -178,10 +191,13 @@ def get_application(job_manager: JobManager, idle_monitor: IdleMonitor) -> Appli
     token = Config.TELEGRAM_TOKEN or "DUMMY_TOKEN_FOR_TESTS"
     app = Application.builder().token(token).build()
     
+    idle_monitor.bot = app.bot
+    
     handlers = BotHandlers(job_manager, idle_monitor)
     app.add_handler(CommandHandler("start", handlers.start_cmd))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_url))
     app.add_handler(MessageHandler(filters.Document.ALL, handlers.handle_document))
+    app.add_handler(CallbackQueryHandler(handlers.handle_callback))
     
     # Store process loop method in JobManager for main.py to call
     job_manager.process_queue_loop = lambda: process_queue_loop(job_manager, idle_monitor, app.bot)
