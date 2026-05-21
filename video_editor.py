@@ -78,7 +78,7 @@ async def _render_clip(source_path: str, start: str, end: str, srt_path: str, ou
     # 3. Hard Subtitles
     # Note: escape path for FFmpeg filter. Absolute path is safer for ffmpeg.
     escaped_srt = os.path.abspath(srt_path).replace('\\', '/').replace(':', '\\:')
-    style = f"FontSize={Config.SUBTITLE_FONT_SIZE},FontName=DejaVu Sans,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=2,Alignment=2,MarginV=40"
+    style = f"FontSize={Config.SUBTITLE_FONT_SIZE},FontName=Arial,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=3,Outline=2,Alignment=2,MarginV=60,Bold=1"
     v = v.filter('subtitles', escaped_srt, force_style=style)
     
     # 4. Output configuration

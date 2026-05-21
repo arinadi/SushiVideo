@@ -27,8 +27,12 @@ class IdleMonitor:
                 continue
                 
             elapsed = (time.time() - self.last_activity) / 60
+            
+            if elapsed >= self.timeout_minutes / 2:
+                print(f"💤 System idle for {elapsed:.1f}/{self.timeout_minutes} minutes...")
+                
             if elapsed >= self.timeout_minutes:
-                print(f"💤 Idle for {elapsed:.1f} minutes. Shutting down runtime...")
+                print(f"🛑 Idle limit reached ({self.timeout_minutes} min). Shutting down runtime...")
                 self._shutdown()
                 
     def start(self):

@@ -39,7 +39,7 @@ class Config:
     MAX_SEGMENTS = int(os.getenv('MAX_SEGMENTS', 5))
     MIN_SEGMENT_DURATION = int(os.getenv('MIN_SEGMENT_DURATION', 15))
     MAX_SEGMENT_DURATION = int(os.getenv('MAX_SEGMENT_DURATION', 60))
-    SUBTITLE_FONT_SIZE = int(os.getenv('SUBTITLE_FONT_SIZE', 24))
+    SUBTITLE_FONT_SIZE = int(os.getenv('SUBTITLE_FONT_SIZE', 18))
     OUTPUT_FOLDER = os.getenv('OUTPUT_FOLDER', 'video_clipper')
     
     # System

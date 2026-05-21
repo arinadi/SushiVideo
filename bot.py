@@ -123,6 +123,19 @@ async def process_queue_loop(job_manager: JobManager, idle_monitor: IdleMonitor,
             await notify(job, bot, "🧠 AI Chef selecting best cuts...")
             ai = ai_selector.get_ai_selector()
             segments = await ai.select_segments(transcript_data.transcript_text)
+            
+            # Apply 3s buffer to segments
+            import utils
+            for seg in segments:
+                start_sec = utils.time_to_seconds(seg.start_time)
+                end_sec = utils.time_to_seconds(seg.end_time)
+                
+                start_sec = max(0.0, start_sec - 3.0)
+                end_sec = min(video_meta.duration, end_sec + 3.0)
+                
+                seg.start_time = utils.format_timestamp(start_sec)
+                seg.end_time = utils.format_timestamp(end_sec)
+                
             job.segments = segments
             idle_monitor.reset()
             
