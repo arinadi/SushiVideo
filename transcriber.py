@@ -46,7 +46,6 @@ async def _process_existing_srt(srt_path: str, source: TranscriptSource) -> Tran
 
 async def _generate_whisper_transcript(video_path: str) -> TranscriptData:
     """Run faster-whisper on local video file."""
-    global _whisper_model
     if not _whisper_model:
         await init_whisper()
         
